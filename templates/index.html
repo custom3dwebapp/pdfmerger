@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FOLIOCRAFT — PDF & DOCX</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <header id="app-header">
+    <div class="header-logo">FOLIO<span class="accent">CRAFT</span></div>
+    <div class="header-stats">
+      <div>Files <strong id="stat-files">0</strong></div>
+      <div>Pages <strong id="stat-pages">0</strong></div>
+      <div>Selected <strong id="stat-selected">0</strong></div>
+    </div>
+  </header>
+
+  <div id="main-layout">
+    <!-- LEFT PANEL -->
+    <div id="left-panel">
+      <div class="panel-header">
+        <div class="panel-label">Input</div>
+        <div class="panel-title">DOCUMENTS</div>
+      </div>
+      <div id="upload-zone">
+        <input type="file" id="file-input" accept=".pdf,.docx" multiple hidden>
+        <span class="upload-icon">⬆</span>
+        <div class="upload-text">Drop PDF/DOCX here</div>
+      </div>
+      <div id="file-list-container"></div>
+      <div id="merge-zone">
+        <button id="merge-btn" disabled>Merge & Download</button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="right-panel">
+      <div class="panel-header workspace-header">
+        <div>
+          <div class="panel-label">Workspace</div>
+          <div class="panel-title" id="ws-title">Select File</div>
+        </div>
+        <div class="ws-actions">
+          <button class="ws-btn active" id="btn-view-grid" title="Grid View">⊞ Grid</button>
+          <button class="ws-btn" id="btn-view-read" title="Read View">≡ Read</button>
+          <div style="width:1px; background:#e1e4e8; margin:0 4px;"></div>
+          <button class="ws-btn" id="btn-sel-all">Select All</button>
+          <button class="ws-btn" id="btn-clear">Clear</button>
+        </div>
+      </div>
+      <div id="workspace-canvas">
+        <div id="pages-grid"></div>
+        <div id="pages-read-view"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
