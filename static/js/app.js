@@ -61,6 +61,9 @@ async function uploadFiles(files) {
       }
       if(data.error) throw new Error(data.error);
       STATE.files.push({...data, pages: data.thumbnails.map(() => ({rotation:0}))});
+      data.thumbnails.forEach((_, i) => {
+        STATE.queue.push({ file_id: data.file_id, page_index: i });
+      });
       renderFiles();
       loadFile(data.file_id);
     } catch(e) { showToast(e.message || String(e), 'error'); }
@@ -180,16 +183,6 @@ function loadFile(id) {
   }
   $('ws-title').innerText = f.original_name;
 
-  // By default, select all pages if none are selected for this file
-  const hasAnySelected = f.thumbnails.some((_, i) => isInQueue(id, i));
-  if (!hasAnySelected) {
-    f.thumbnails.forEach((_, i) => {
-      STATE.queue.push({ file_id: id, page_index: i });
-    });
-    updateStats();
-    updatePageSelectionUI();
-  }
-
   // Grid View
   $('pages-grid').innerHTML = f.thumbnails.map((src, i) => `
     <div class="page-card ${isInQueue(id,i)?'selected':''} ${f.pages[i].rotation?'rotated':''}" 
@@ -217,6 +210,7 @@ function loadFile(id) {
     </div>
   `).join('');
   
+  updatePageSelectionUI();
   updateViewMode();
 }
 
