@@ -1,5 +1,4 @@
-import io, base64, uuid
-from collections import OrderedDict
+import io, os, base64, uuid
 from flask import Flask, request, jsonify, send_file, render_template
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.utils import secure_filename
@@ -13,14 +12,12 @@ from reportlab.lib.units import inch
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 @app.errorhandler(RequestEntityTooLarge)
 def request_entity_too_large(error):
     return jsonify({'error': 'File is too large. Maximum size is 100 MB.'}), 413
-
-# In-memory file store: file_id -> {'pdf_bytes': bytes, 'original_name': str}
-# Keep a bounded history to avoid unbounded process memory growth.
-MAX_STORED_FILES = 100
-FILE_STORE = OrderedDict()
 
 ALLOWED_EXT = {'pdf', 'docx'}
 
@@ -28,11 +25,18 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
 
 
-def store_file(file_id, entry):
-    FILE_STORE[file_id] = entry
-    FILE_STORE.move_to_end(file_id)
-    while len(FILE_STORE) > MAX_STORED_FILES:
-        FILE_STORE.popitem(last=False)
+def store_file(file_id, pdf_bytes, original_name):
+    path = os.path.join(UPLOAD_DIR, f'{file_id}.pdf')
+    with open(path, 'wb') as f:
+        f.write(pdf_bytes)
+
+
+def load_file(file_id):
+    path = os.path.join(UPLOAD_DIR, f'{file_id}.pdf')
+    if not os.path.exists(path):
+        return None
+    with open(path, 'rb') as f:
+        return f.read()
 
 def docx_to_pdf_bytes(docx_bytes):
     doc = DocxDocument(io.BytesIO(docx_bytes))
@@ -93,7 +97,7 @@ def upload():
                 thumbnails.append(f'data:image/png;base64,{b64}')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    store_file(file_id, {'pdf_bytes': pdf_bytes, 'original_name': original_name})
+    store_file(file_id, pdf_bytes, original_name)
 
     return jsonify({
         'file_id': file_id,
@@ -124,12 +128,12 @@ def merge():
         except (TypeError, ValueError):
             continue
 
-        entry = FILE_STORE.get(file_id)
-        if not entry:
+        pdf_bytes = load_file(file_id)
+        if not pdf_bytes:
             continue
 
         try:
-            with fitz.open(stream=entry['pdf_bytes'], filetype='pdf') as src:
+            with fitz.open(stream=pdf_bytes, filetype='pdf') as src:
                 if page_idx < 0 or page_idx >= len(src):
                     continue
                 merger.insert_pdf(src, from_page=page_idx, to_page=page_idx)
