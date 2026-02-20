@@ -3,49 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FOLIOCRAFT — PDF & DOCX</title>
+  <title>DopeOffice — PDF & Document Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body>
+<body class="empty-state">
+  <div class="site-bg">
+    <div class="dot-pattern" aria-hidden="true"></div>
+  </div>
+
   <header id="app-header">
-    <div class="header-logo">FOLIO<span class="accent">CRAFT</span></div>
-    <div class="header-stats">
-      <div>Files <strong id="stat-files">0</strong></div>
-      <div>Pages <strong id="stat-pages">0</strong></div>
-      <div>Selected <strong id="stat-selected">0</strong></div>
+    <div class="header-inner">
+      <div class="header-logo">
+        <div class="logo-mark" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+            <rect x="2" y="4" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="10" y="6" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.1"/>
+          </svg>
+        </div>
+        <span class="logo-text">DOPE<em>OFFICE</em></span> <br>PDF MERGER</span>
+      </div>
+      <div class="header-actions">
+        <nav class="header-stats">
+          <span class="stat-item"><span class="stat-val" id="stat-files">0</span> files</span>
+          <span class="stat-dot"></span>
+          <span class="stat-item"><span class="stat-val" id="stat-pages">0</span> pages</span>
+          <span class="stat-dot"></span>
+          <span class="stat-item accent"><span class="stat-val" id="stat-selected">0</span> selected</span>
+        </nav>
+        <button id="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <span id="theme-toggle-icon" aria-hidden="true">☼</span>
+          <span id="theme-toggle-label">Light</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <div id="main-layout">
-    <!-- LEFT PANEL -->
-    <div id="left-panel">
+  <main id="main-layout">
+    <aside id="left-panel">
       <div class="panel-header">
-        <div class="panel-label">Input</div>
-        <div class="panel-title">DOCUMENTS</div>
+        <h2 class="panel-title">Documents</h2>
       </div>
       <div id="upload-zone">
         <input type="file" id="file-input" accept=".pdf,.docx" multiple hidden>
-        <span class="upload-icon">⬆</span>
-        <div class="upload-text">Drop PDF/DOCX here</div>
+        <div class="upload-visual" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+            <path d="M20 8v24M8 20h24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="upload-text">Drop PDF or DOCX</span>
+        <span class="upload-hint">or click to browse</span>
       </div>
-      <div id="file-list-container"></div>
+      <div id="file-list-container" ondragover="allowDrop(event)" ondrop="fileDropOnContainer(event)"></div>
       <div id="merge-zone">
-        <button id="merge-btn" disabled>Merge & Download</button>
+        <button id="merge-btn" disabled>
+          <span id="merge-btn-text">Merge & Download</span>
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3v12M4 10l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
-    </div>
+    </aside>
 
-    <!-- RIGHT PANEL -->
-    <div id="right-panel">
+    <section id="right-panel">
       <div class="panel-header workspace-header">
-        <div>
-          <div class="panel-label">Workspace</div>
-          <div class="panel-title" id="ws-title">Select File</div>
+        <div class="ws-title-block">
+          <h2 class="panel-title" id="ws-title">Select a file</h2>
         </div>
         <div class="ws-actions">
-          <button class="ws-btn active" id="btn-view-grid" title="Grid View">⊞ Grid</button>
-          <button class="ws-btn" id="btn-view-read" title="Read View">≡ Read</button>
-          <div style="width:1px; background:#e1e4e8; margin:0 4px;"></div>
-          <button class="ws-btn" id="btn-sel-all">Select All</button>
+          <button class="ws-btn active" id="btn-view-grid" title="Grid view">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="1" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="9.5" y="1" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="1" y="9.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="9.5" y="9.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+            Grid
+          </button>
+          <button class="ws-btn" id="btn-view-read" title="Read view">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="1.5" width="14" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="1" y="10" width="14" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+            Read
+          </button>
+          <div class="ws-divider"></div>
+          <button class="ws-btn" id="btn-sel-all">Select all</button>
           <button class="ws-btn" id="btn-clear">Clear</button>
         </div>
       </div>
@@ -53,10 +98,10 @@
         <div id="pages-grid"></div>
         <div id="pages-read-view"></div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <div id="toast"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
   <script src="/static/js/app.js"></script>
 </body>
 </html>
