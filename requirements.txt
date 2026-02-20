@@ -2,3 +2,4 @@ flask
 pymupdf
 python-docx
 reportlab
+gunicorn
