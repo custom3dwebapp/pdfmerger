@@ -1,4 +1,4 @@
-import io, os, base64, uuid
+import io, os, time, base64, uuid, threading
 from flask import Flask, request, jsonify, send_file, render_template
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.utils import secure_filename
@@ -14,6 +14,8 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+FILE_MAX_AGE = 30 * 60  # 30 minutes
 
 @app.errorhandler(RequestEntityTooLarge)
 def request_entity_too_large(error):
@@ -37,6 +39,28 @@ def load_file(file_id):
         return None
     with open(path, 'rb') as f:
         return f.read()
+
+
+def cleanup_old_files():
+    now = time.time()
+    for fname in os.listdir(UPLOAD_DIR):
+        fpath = os.path.join(UPLOAD_DIR, fname)
+        if not os.path.isfile(fpath):
+            continue
+        try:
+            if now - os.path.getmtime(fpath) > FILE_MAX_AGE:
+                os.remove(fpath)
+        except OSError:
+            pass
+
+
+def _cleanup_loop():
+    while True:
+        time.sleep(300)  # run every 5 minutes
+        cleanup_old_files()
+
+_cleanup_thread = threading.Thread(target=_cleanup_loop, daemon=True)
+_cleanup_thread.start()
 
 def docx_to_pdf_bytes(docx_bytes):
     doc = DocxDocument(io.BytesIO(docx_bytes))
@@ -97,6 +121,7 @@ def upload():
                 thumbnails.append(f'data:image/png;base64,{b64}')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    cleanup_old_files()
     store_file(file_id, pdf_bytes, original_name)
 
     return jsonify({

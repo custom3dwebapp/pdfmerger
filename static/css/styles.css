@@ -456,6 +456,35 @@ body.empty-state #merge-zone {
 }
 
 
+/* ═══ Upload spinner ═══ */
+
+#upload-zone.uploading {
+  pointer-events: none;
+  border-color: var(--accent);
+  background: rgba(255, 107, 53, 0.06);
+}
+
+#upload-zone.uploading .upload-visual {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.upload-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
 /* ═══ File list ═══ */
 
 #file-list-container {

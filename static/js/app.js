@@ -50,9 +50,17 @@ $('upload-zone').ondragleave = () => $('upload-zone').classList.remove('dragover
 $('upload-zone').ondrop = e => { e.preventDefault(); uploadFiles(e.dataTransfer.files); };
 
 async function uploadFiles(files) {
+  const zone = $('upload-zone');
+  const totalFiles = files.length;
+  let completed = 0;
+
+  zone.classList.add('uploading');
+  updateUploadProgress(0, totalFiles);
+
   for(let f of files) {
     let fd = new FormData(); fd.append('file', f);
     try {
+      updateUploadProgress(completed, totalFiles, f.name);
       let res = await fetch('/upload', {method:'POST', body:fd});
       let data;
       try { data = await res.json(); } catch(_) { data = {}; }
@@ -64,10 +72,36 @@ async function uploadFiles(files) {
       data.thumbnails.forEach((_, i) => {
         STATE.queue.push({ file_id: data.file_id, page_index: i });
       });
+      completed++;
+      updateUploadProgress(completed, totalFiles);
       renderFiles();
       loadFile(data.file_id);
-    } catch(e) { showToast(e.message || String(e), 'error'); }
+    } catch(e) { showToast(e.message || String(e), 'error'); completed++; }
   }
+
+  zone.classList.remove('uploading');
+  resetUploadZone();
+}
+
+function updateUploadProgress(done, total, filename) {
+  const text = $('upload-text');
+  const hint = $('upload-hint');
+  const visual = $('upload-visual');
+  if (!text) return;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  visual.innerHTML = `<div class="upload-spinner"></div>`;
+  text.textContent = filename ? `Uploading ${filename}` : `Processing...`;
+  hint.textContent = `${done}/${total} files · ${pct}%`;
+}
+
+function resetUploadZone() {
+  const text = $('upload-text');
+  const hint = $('upload-hint');
+  const visual = $('upload-visual');
+  if (!text) return;
+  visual.innerHTML = `<svg width="22" height="22" viewBox="0 0 40 40" fill="none"><path d="M20 8v24M8 20h24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+  text.textContent = 'Drop PDF or DOCX';
+  hint.textContent = 'or click to browse';
 }
 
 // --- FILE LIST & SORTING ---
